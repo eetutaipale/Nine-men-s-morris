@@ -1,12 +1,4 @@
 
-"""
-Examples of every feature in the famnit-gym Mill README.
- 
-Each example is a small function built on the README's random game.
-Run one by changing the number at the bottom of the file, then:
- 
-    python readme_examples.py
-"""
 from dataclasses import dataclass
 import random
 from famnit_gym.envs import mill
