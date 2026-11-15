@@ -122,6 +122,13 @@ DIFFICULTIES = {
     "Easy":   {"iterations": 40,  "c": 1.41, "epsilon": 0.25},
     "Medium": {"iterations": 250, "c": 1.41, "epsilon": 0.0},
     "Hard":   {"iterations": 800, "c": 1.41, "epsilon": 0.0},
+    "Random": {"iterations": 0,   "c": 1.41, "epsilon": 1.0},  # always random
+    # for testing c values
+    "c=0":    {"iterations": 100, "c": 0.0,  "epsilon": 0.0},
+    "c=0.5":  {"iterations": 100, "c": 0.5,  "epsilon": 0.0},
+    "c=1.41": {"iterations": 100, "c": 1.41, "epsilon": 0.0},
+    "c=2":    {"iterations": 100, "c": 2.0,  "epsilon": 0.0},
+    "c=4":    {"iterations": 100, "c": 4.0,  "epsilon": 0.0},
 }
 
 def get_ai_move(model, player: int, legal_moves, difficulty: str):
@@ -292,6 +299,70 @@ def run_tournament(games_per_pair: int = 20):
     print("="*68)
 
 # ---------------------------------------------------------------------------
+# 5. Experiments for part 1
+# ---------------------------------------------------------------------------
+def run_matchup(lvl1: str, lvl2: str, games: int = 10):
+    time_stats = {lvl1: {"total_time": 0.0, "moves": 0}, lvl2: {"total_time": 0.0, "moves": 0}}
+    wins_1, wins_2, draws = 0, 0, 0
+    p1_wins, p2_wins = 0, 0
+
+    for g in range(games):
+        # change who starts every game
+        if g % 2 == 0:
+            res = simulate_single_game(lvl1, lvl2, time_stats)
+            if res == 1: wins_1 += 1
+            elif res == 2: wins_2 += 1
+            else: draws += 1
+        else:
+            res = simulate_single_game(lvl2, lvl1, time_stats)
+            if res == 1: wins_2 += 1
+            elif res == 2: wins_1 += 1
+            else: draws += 1
+
+        # who won by starting position
+        if res == 1: p1_wins += 1
+        elif res == 2: p2_wins += 1
+
+        print(f"  [{lvl1} vs {lvl2}] Completed {g + 1}/{games}...", end="\r")
+
+    print(f"Finished: {lvl1} vs {lvl2} -> {lvl1}: {wins_1} | {lvl2}: {wins_2} | Draws: {draws} | P1 won: {p1_wins} | P2 won: {p2_wins}      ")
+    return wins_1, wins_2, draws, p1_wins, p2_wins
+
+def run_part1(games: int = 10):
+    print(f"\nMCTS vs Random and MCTS vs MCTS ({games} games each)...\n")
+    w1, w2, d, _, _ = run_matchup("Medium", "Random", games)
+    m1, m2, md, p1, p2 = run_matchup("Medium", "Medium", games)
+
+    print("\n" + "="*68)
+    print("PART 1 RESULTS")
+    print("="*68)
+    print(f"{'Matchup':<20} | {'Wins':<10} | {'Draws':<10} | {'Losses':<10}")
+    print("-"*68)
+    print(f"{'MCTS vs Random':<20} | {w1:<10} | {d:<10} | {w2:<10}")
+    print(f"{'MCTS vs MCTS':<20} | {m1:<10} | {md:<10} | {m2:<10}")
+    print(f"\nMCTS vs MCTS: player 1 won {p1}, player 2 won {p2}, draws {md}")
+    print("="*68)
+
+def run_c_test(games: int = 10):
+    c_list = ["c=0", "c=0.5", "c=1.41", "c=2", "c=4"]
+    print(f"\nTesting c values against c=1.41 ({games} games each)...\n")
+
+    results = []
+    for name in c_list:
+        w1, w2, d, _, _ = run_matchup(name, "c=1.41", games)
+        results.append((name, w1, w2, d))
+
+    print("\n" + "="*68)
+    print("UCT RESULTS (against c = 1.41)")
+    print("="*68)
+    print(f"{'c':<10} | {'Wins':<10} | {'Draws':<10} | {'Losses':<10} | {'Win %':<10}")
+    print("-"*68)
+    for name, w1, w2, d in results:
+        win_percent = (w1 + 0.5 * d) / games * 100  # draw counts as half
+        print(f"{DIFFICULTIES[name]['c']:<10} | {w1:<10} | {d:<10} | {w2:<10} | {win_percent:.0f} %")
+    print("="*68)
+
+# ---------------------------------------------------------------------------
 # Main Menu
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -300,8 +371,10 @@ if __name__ == "__main__":
     print("2. Play against AI - Medium")
     print("3. Play against AI - Hard")
     print("4. Run Difficulty Tournament (Generate statistics for poster)")
+    print("5. Run MCTS vs Random and MCTS vs MCTS")
+    print("6. Run c value test")
     
-    choice = input("\nSelect an option (1-4): ").strip()
+    choice = input("\nSelect an option (1-6): ").strip()
     
     if choice == "1":
         play_human_vs_ai("Easy")
@@ -309,9 +382,14 @@ if __name__ == "__main__":
         play_human_vs_ai("Medium")
     elif choice == "3":
         play_human_vs_ai("Hard")
-    elif choice == "4":
+    elif choice in ("4", "5", "6"):
         num_games = input("How many games per pair (recommended 10 or 20)? ").strip()
         n = int(num_games) if num_games.isdigit() and int(num_games) > 0 else 10
-        run_tournament(games_per_pair=n)
+        if choice == "4":
+            run_tournament(games_per_pair=n)
+        elif choice == "5":
+            run_part1(games=n)
+        else:
+            run_c_test(games=n)
     else:
         print("Invalid option.")
