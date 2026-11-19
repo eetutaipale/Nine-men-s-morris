@@ -4,9 +4,7 @@ import time
 from famnit_gym.envs import mill
 from famnit_gym.wrappers.mill import UserInteraction
 
-# ---------------------------------------------------------------------------
-# 1. Core MCTS Structure (Node, select, expand, simulation, backpropagate)
-# ---------------------------------------------------------------------------
+
 class Node:
     def __init__(self, model, player, parent=None, move=None):
         self.state = model
@@ -115,15 +113,13 @@ def backpropagate(node, results):
             player = 1  
         node = node.parent
 
-# ---------------------------------------------------------------------------
-# 2. AI Difficulty Definitions and Move Execution with Timing
-# ---------------------------------------------------------------------------
+
 DIFFICULTIES = {
     "Easy":   {"iterations": 40,  "c": 1.41, "epsilon": 0.25},
     "Medium": {"iterations": 250, "c": 1.41, "epsilon": 0.0},
     "Hard":   {"iterations": 800, "c": 1.41, "epsilon": 0.0},
-    "Random": {"iterations": 0,   "c": 1.41, "epsilon": 1.0},  # always random
-    # for testing c values
+    "Random": {"iterations": 0,   "c": 1.41, "epsilon": 1.0},  
+
     "c=0":    {"iterations": 100, "c": 0.0,  "epsilon": 0.0},
     "c=0.5":  {"iterations": 100, "c": 0.5,  "epsilon": 0.0},
     "c=1.41": {"iterations": 100, "c": 1.41, "epsilon": 0.0},
@@ -136,7 +132,7 @@ def get_ai_move(model, player: int, legal_moves, difficulty: str):
     params = DIFFICULTIES[difficulty]
     start_time = time.perf_counter()
 
-    # Epsilon-greedy random mistake (used to simulate beginner mistakes on Easy)
+
     if params["epsilon"] > 0 and random.random() < params["epsilon"]:
         chosen_move = random.choice(legal_moves)
     else:
@@ -156,13 +152,11 @@ def get_ai_move(model, player: int, legal_moves, difficulty: str):
     elapsed = time.perf_counter() - start_time
     return chosen_move, elapsed
 
-# ---------------------------------------------------------------------------
-# 3. Human vs AI Gameplay (with Difficulty Selection)
-# ---------------------------------------------------------------------------
+
 def user_player(env, legal_moves):
     destinations = {move[1] for move in legal_moves}
     for position in destinations:
-        env.mark_position(position, (255, 215, 0, 120))  # Yellow: possible destinations
+        env.mark_position(position, (255, 215, 0, 120))  
 
     move = 0
     while move == 0:
@@ -206,11 +200,9 @@ def play_human_vs_ai(difficulty: str):
         env.step(move)
     env.close()
 
-# ---------------------------------------------------------------------------
-# 4. Automated Difficulty Tournament (Headless Benchmark for Poster Results)
-# ---------------------------------------------------------------------------
+
 def simulate_single_game(diff_p1: str, diff_p2: str, time_stats: dict):
-    """Plays a single headless game. Returns: 1 (P1 wins), 2 (P2 wins), or 0 (Draw)."""
+    
     env = mill.env(render_mode=None)
     env.reset()
     winner = 0
@@ -258,7 +250,7 @@ def run_tournament(games_per_pair: int = 20):
             wins_1, wins_2, draws = 0, 0, 0
 
             for g in range(games_per_pair):
-                # Alternate who plays first (player_1) to ensure a fair comparison
+                
                 if g % 2 == 0:
                     res = simulate_single_game(lvl1, lvl2, time_stats)
                     if res == 1: wins_1 += 1
@@ -275,7 +267,7 @@ def run_tournament(games_per_pair: int = 20):
             print(f"Finished: {lvl1} vs {lvl2} -> {lvl1}: {wins_1} | {lvl2}: {wins_2} | Draws: {draws}      ")
             matchup_results.append((lvl1, lvl2, wins_1, wins_2, draws))
 
-    # Print formatted tables for the poster
+  
     print("\n" + "="*68)
     print("TOURNAMENT RESULTS (DIFFICULTY COMPARISON)")
     print("="*68)
@@ -298,16 +290,14 @@ def run_tournament(games_per_pair: int = 20):
         print(f"{lvl:<12} | {iters:<10} | {eps:<10} | {moves:<12} | {avg_t:.4f} s")
     print("="*68)
 
-# ---------------------------------------------------------------------------
-# 5. Experiments for part 1
-# ---------------------------------------------------------------------------
+
 def run_matchup(lvl1: str, lvl2: str, games: int = 10):
     time_stats = {lvl1: {"total_time": 0.0, "moves": 0}, lvl2: {"total_time": 0.0, "moves": 0}}
     wins_1, wins_2, draws = 0, 0, 0
     p1_wins, p2_wins = 0, 0
 
     for g in range(games):
-        # change who starts every game
+        
         if g % 2 == 0:
             res = simulate_single_game(lvl1, lvl2, time_stats)
             if res == 1: wins_1 += 1
@@ -319,7 +309,7 @@ def run_matchup(lvl1: str, lvl2: str, games: int = 10):
             elif res == 2: wins_1 += 1
             else: draws += 1
 
-        # who won by starting position
+        
         if res == 1: p1_wins += 1
         elif res == 2: p2_wins += 1
 
@@ -358,19 +348,17 @@ def run_c_test(games: int = 10):
     print(f"{'c':<10} | {'Wins':<10} | {'Draws':<10} | {'Losses':<10} | {'Win %':<10}")
     print("-"*68)
     for name, w1, w2, d in results:
-        win_percent = (w1 + 0.5 * d) / games * 100  # draw counts as half
+        win_percent = (w1 + 0.5 * d) / games * 100  
         print(f"{DIFFICULTIES[name]['c']:<10} | {w1:<10} | {d:<10} | {w2:<10} | {win_percent:.0f} %")
     print("="*68)
 
-# ---------------------------------------------------------------------------
-# Main Menu
-# ---------------------------------------------------------------------------
+
 if __name__ == "__main__":
     print("=== NINE MEN'S MORRIS - MCTS ===")
     print("1. Play against AI - Easy")
     print("2. Play against AI - Medium")
     print("3. Play against AI - Hard")
-    print("4. Run Difficulty Tournament (Generate statistics for poster)")
+    print("4. Run Difficulty Tournament")
     print("5. Run MCTS vs Random and MCTS vs MCTS")
     print("6. Run c value test")
     
