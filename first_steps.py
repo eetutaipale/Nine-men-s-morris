@@ -128,7 +128,6 @@ DIFFICULTIES = {
 }
 
 def get_ai_move(model, player: int, legal_moves, difficulty: str):
-    """Returns a tuple: (chosen_move, computation_time_in_seconds)."""
     params = DIFFICULTIES[difficulty]
     start_time = time.perf_counter()
 

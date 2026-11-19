@@ -1,7 +1,7 @@
 Nine Men's Morris with MCTS
 Requirements
 
-You need Python 3 and the course package famnit_gym, which provides the Mill environment. Install famnit_gym. The script also uses random, math and time, which come with Python.
+12_IS_Seminar1_Taipale_PopovicYou need Python 3 and the course package famnit_gym, which provides the Mill environment. Install famnit_gym. The script also uses random, math and time, which come with Python.
 
 Running the program
 
