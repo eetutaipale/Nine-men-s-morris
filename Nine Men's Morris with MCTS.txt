@@ -1,0 +1,20 @@
+Nine Men's Morris with MCTS
+Requirements
+
+You need Python 3 and the course package famnit_gym, which provides the Mill environment. Install famnit_gym. The script also uses random, math and time, which come with Python.
+
+Running the program
+
+Open a terminal in the folder that contains the script and run it with Python:
+
+python first_steps.py
+
+you can choose from
+1. Play against AI - Easy
+2. Play against AI - Medium
+3. Play against AI - Hard
+4. Run Difficulty Tournament
+5. Run MCTS vs Random and MCTS vs MCTS
+6. Run c value test
+
+First three is about playing with humans and the other three are for getting data for the poster
